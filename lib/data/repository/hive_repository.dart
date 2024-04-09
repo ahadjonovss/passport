@@ -7,12 +7,16 @@ import 'package:passport/data/model/person_adapter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class HiveRepository{
+class HiveRepository {
   void savePerson(PersonModel person) {
     final personBox = Hive.box<PersonModel>('personBox');
     personBox.add(person);
   }
 
+  void deleteData() {
+    final personBox = Hive.box<PersonModel>('personBox');
+    personBox.clear();
+  }
 
   List<PersonModel> readAllData() {
     final personBox = Hive.box<PersonModel>('personBox');
@@ -27,7 +31,6 @@ class HiveRepository{
 
     return allData;
   }
-
 
   Future<void> generateExcel(int count) async {
     // Create a new Excel workbook
@@ -66,30 +69,27 @@ class HiveRepository{
       count++;
     }
 
-
     // Save the Excel file to a ByteData
     var excelData = excel.encode();
 
     // Save the ByteData to a file
 
-    final filePath = '/storage/emulated/0/Download/malumotlar.xlsx';
+    // final filePath = '/storage/emulated/0/Download/malumotlar.xlsx';
+    final Directory appDocumentsDir = await getApplicationDocumentsDirectory();
+    final filePath = '${appDocumentsDir.path}/malumotlar.xlsx';
+    print(filePath);
     await File(filePath).writeAsBytes(excelData!);
 
     openFile(filePath);
 
-
     print('Excel file generated and saved successfully.');
   }
 
-
   Future<void> openFile(String filePath) async {
-    if (await Permission.storage
-        .request()
-        .isGranted) {
+    if (await Permission.storage.request().isGranted) {
       final directory = await getApplicationDocumentsDirectory();
       final file = File(filePath);
       OpenFilex.open(filePath);
     }
   }
-
 }
